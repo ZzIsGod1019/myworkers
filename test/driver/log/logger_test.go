@@ -1,7 +1,7 @@
 package test
 
 import (
-	"myworkers/driver/logger"
+	"myworkers/logger"
 	"strconv"
 	"testing"
 )

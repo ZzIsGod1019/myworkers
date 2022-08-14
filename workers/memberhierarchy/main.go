@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"myworkers/driver/database"
-	"myworkers/driver/logger"
+	"myworkers/database"
+	"myworkers/logger"
+	"myworkers/sqs"
 	"myworkers/workers/memberhierarchy/model"
 )
 
@@ -15,7 +16,17 @@ func main() {
 	// 初始化日志
 	logger.LoggerInit()
 
-	hanlde("")
+	ch := make(chan struct{}, 3)
+	for {
+		ch <- struct{}{}
+		go func() {
+			message, err := sqs.ReceiveMessage()
+			if err == nil {
+				hanlde(*message.Body)
+			}
+			<-ch
+		}()
+	}
 }
 
 func hanlde(taskJson string) bool {

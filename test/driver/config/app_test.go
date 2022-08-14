@@ -1,13 +1,16 @@
 package test
 
 import (
-	"myworkers/driver/config"
+	"myworkers/config"
 	"strconv"
 	"testing"
 )
 
 func TestConfig(t *testing.T) {
 	config.Init()
+	config.GetStringKey("aws_sqs.queue")
+	config.GetStringKey("aws_sqs.region")
+	config.GetIntKey("aws_sqs.timeout")
 	env := config.GetStringKey("app.env")
 	if env == "test" {
 		t.Log("config.GetStringKey正常")

@@ -1,8 +1,8 @@
 package model
 
 import (
-	"myworkers/driver/database"
-	"myworkers/driver/logger"
+	"myworkers/database"
+	"myworkers/logger"
 	"strconv"
 )
 
