@@ -2,13 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"myworkers/config"
 	"myworkers/database"
 	"myworkers/logger"
 	"myworkers/sqs"
 	"myworkers/workers/memberhierarchy/model"
+	"strconv"
 )
 
 func main() {
+	// 读取配置初始化
+	config.Init()
 	// 初始化mysql
 	database.MysqlInit()
 	// 初始化Redis
@@ -20,11 +24,14 @@ func main() {
 	for {
 		ch <- struct{}{}
 		go func() {
+			defer func() {
+				<-ch
+			}()
 			message, err := sqs.ReceiveMessage()
 			if err == nil {
-				hanlde(*message.Body)
+				res := hanlde(*message.Body)
+				logger.Trace("info", "", "队列消费"+strconv.FormatBool(res)+"    "+*message.Body)
 			}
-			<-ch
 		}()
 	}
 }
@@ -41,9 +48,9 @@ func hanlde(taskJson string) bool {
 		logger.Trace("error", taskInfo.Lang, "旧数据不做更新    "+taskJson)
 		return false
 	}
-	res := model.UpdateHierarchyByMemberId(taskInfo.Lang, taskInfo.Data.MemberId, taskInfo.Data.HierarchyId, taskInfo.Data.Time)
-	if !res {
-		logger.Trace("error", taskInfo.Lang, "更新失败    "+taskJson)
+	res, err := model.UpdateHierarchyByMemberId(taskInfo.Lang, taskInfo.Data.MemberId, taskInfo.Data.HierarchyId, taskInfo.Data.Time)
+	if !res && err != nil {
+		logger.Trace("error", taskInfo.Lang, err.Error()+"    "+taskJson)
 		return false
 	}
 	return true

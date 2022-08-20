@@ -1,8 +1,8 @@
 package model
 
 import (
+	"errors"
 	"myworkers/database"
-	"myworkers/logger"
 	"strconv"
 )
 
@@ -25,18 +25,16 @@ func GetMemberHierarchyByMemberId(land string, memberId int) (memberHierarchyInf
 	return chapter, err
 }
 
-func UpdateHierarchyByMemberId(land string, memberId int, hierarchyId int, handleTime string) bool {
+func UpdateHierarchyByMemberId(land string, memberId int, hierarchyId int, handleTime string) (bool, error) {
 	databaseName := database.MainDatabaseName[land]
 	r, err := database.GetMainDb(land).Exec("update "+databaseName+"."+tableName+" set hierarchy_id = ? and handle_time = ? where member_id = ?;", hierarchyId, handleTime, memberId)
 
 	if err != nil {
-		logger.Trace("error", land, "修改用户失败    "+strconv.Itoa(memberId))
-		return false
+		return false, errors.New("修改用户失败    " + strconv.Itoa(memberId))
 	}
 	_, err = r.RowsAffected()
 	if err != nil {
-		logger.Trace("info", land, "未修改当前用户分组    "+strconv.Itoa(memberId))
-		return false
+		return false, errors.New("未修改当前用户分组    " + strconv.Itoa(memberId))
 	}
-	return true
+	return true, nil
 }

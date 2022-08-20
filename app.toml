@@ -4,7 +4,7 @@ env="test"
 # port 运行端口 暂定 joyread-go-api 使用 8801
 port="8801"
 # locales 当前项目包含的所有语言 初始化 mysql、redis 等配置时需要以这个数组为准 (也就是如果locales里包括了ko,后续的配置必须有 jwt_secret_ko,trace_log_path_ko,mysql_main_ko,mysql_split_ko,redis_main_ko,redis_statistic_ko等)
-locales=[ "en", "es" ]
+locales=["en"]
 # 各语言的 trace log 目录
 trace_log_path_en="/var/www/test/ENV_eng/app-novel-api/storage/logs"
 trace_log_path_es="/var/www/test/ENV_spanish/app-novel-api/storage/logs"
