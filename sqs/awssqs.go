@@ -12,7 +12,6 @@ import (
 
 func GetQueueURL(sess *session.Session, queue *string) (*sqs.GetQueueUrlOutput, error) {
 	svc := sqs.New(sess)
-
 	urlResult, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
 		QueueName: queue,
 	})

@@ -7,10 +7,17 @@ import (
 	"myworkers/logger"
 	"myworkers/sqs"
 	"myworkers/workers/memberhierarchy/model"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 )
 
 func main() {
+	// 接收终止信号
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	isStop := false // 是否接收到结束信号
 	// 读取配置初始化
 	config.Init()
 	// 初始化mysql
@@ -20,19 +27,35 @@ func main() {
 	// 初始化日志
 	logger.LoggerInit()
 
-	ch := make(chan struct{}, 3)
+	ch := make(chan struct{}, 3) // 限制协程数量
 	for {
-		ch <- struct{}{}
-		go func() {
-			defer func() {
-				<-ch
-			}()
-			message, err := sqs.ReceiveMessage()
-			if err == nil {
-				res := hanlde(*message.Body)
-				logger.Trace("info", "", "队列消费"+strconv.FormatBool(res)+"    "+*message.Body)
+		select {
+		case <-c: // 接收到终止信号后不再创建任务，等待当前任务执行完毕后退出程序
+			isStop = true
+			// return
+		default:
+			if isStop {
+				if len(ch) == 0 {
+					return
+				} else {
+					continue
+				}
 			}
-		}()
+
+			ch <- struct{}{}
+			go func() {
+				defer func() {
+					<-ch
+				}()
+				message, err := sqs.ReceiveMessage()
+				if err == nil {
+					res := hanlde(*message.Body)
+					logger.Trace("info", "", "队列消费"+strconv.FormatBool(res)+"    "+*message.Body)
+				} else {
+					logger.Trace("error", "", "队列服务报错    "+err.Error())
+				}
+			}()
+		}
 	}
 }
 

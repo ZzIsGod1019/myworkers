@@ -18,7 +18,7 @@ var AwsSqsConf map[string]interface{}
 // Init 配置加载
 func Init() {
 	// 测试时，临时写死配置文件
-	exPath := "/mnt/d/workspace/myworkers"
+	exPath := "/home/zhuzhe/go/myworkers"
 	// ex, _ := os.Executable()
 	// exPath := filepath.Dir(ex)
 
